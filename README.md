@@ -4,7 +4,7 @@ Portfolio statique, responsive et prêt à être déployé gratuitement sur Verc
 
 ## Pages
 
-- `/` : landing page avec showreel, services empilés au scroll, six contenus courts, présentation et contact.
+- `/` : landing page avec showreel, quatre expertises empilées au scroll, six contenus courts, projet personnel, présentation et contact.
 - `/works/` : grille filtrable des projets de cadrage et de montage.
 - `/deviens-videaste/` : étude de cas consacrée à la plateforme Deviens Vidéaste.
 
