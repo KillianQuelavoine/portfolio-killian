@@ -143,9 +143,13 @@ button { font: inherit; }
 .service-number { display: block; margin-bottom: 22px; color: var(--red); font: 10px var(--mono); }
 .service-copy h3 { margin: 0; font-size: clamp(29px, 3vw, 42px); letter-spacing: -.04em; font-weight: 600; }
 .service-copy p { margin: 25px 0 34px; color: #999; font-size: 15px; line-height: 1.7; }
-.service-image { overflow: hidden; height: 100%; min-height: 450px; border-radius: 22px; background: #151515; }
-.service-image img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.85) brightness(.78); transition: transform .7s, filter .4s; }
-.service-card:hover .service-image img { transform: scale(1.025); filter: saturate(1) brightness(.88); }
+.service-image { overflow: hidden; height: 100%; min-height: 450px; display: grid; grid-template-columns: 1.45fr .8fr; grid-template-rows: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 22px; background: #151515; }
+.service-shot { position: relative; min-width: 0; min-height: 0; overflow: hidden; border-radius: 12px; background: #0d0d0d; }
+.service-shot:first-child { grid-row: 1 / -1; }
+.service-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.72), transparent 48%); }
+.service-shot img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.78) brightness(.74); transition: transform .7s, filter .4s; }
+.service-shot span { position: absolute; z-index: 2; left: 13px; bottom: 12px; padding: 7px 9px; border: 1px solid rgba(255,255,255,.14); border-radius: 15px; background: rgba(7,7,7,.68); color: #ddd; font: 8px var(--mono); text-transform: uppercase; backdrop-filter: blur(8px); }
+.service-card:hover .service-shot img { transform: scale(1.025); filter: saturate(.95) brightness(.84); }
 
 .featured { background: #090909; }
 .category-pills { display: flex; justify-content: center; gap: 10px; margin: -10px 0 45px; }
@@ -361,6 +365,8 @@ button { font: inherit; }
 .catalog-filter-meta { justify-self: end; display: flex; align-items: center; gap: 16px; color: #666; font: 8px var(--mono); text-transform: uppercase; }
 .catalog-filter-meta button { padding: 10px 13px; border-color: var(--line); border-radius: 17px; color: #aaa; }
 .catalog-filter-meta button:hover { border-color: rgba(255,255,255,.26); color: white; }
+.catalog-filter-category { grid-column: 1 / -1; padding-top: 11px; border-top: 1px solid var(--line); }
+.catalog-filter-category > div { flex-wrap: wrap; }
 .catalog-results { padding: 58px 18px 125px; }
 .catalog-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 48px 14px; }
 .catalog-card { min-width: 0; }
@@ -602,7 +608,9 @@ button { font: inherit; }
   .service-stack { gap: 30px; }
   .service-card { grid-template-columns: 1fr; gap: 15px; min-height: 0; padding: 12px; border-radius: 22px; }
   .service-copy { padding: 35px 24px 25px; }
-  .service-image { min-height: 250px; order: -1; border-radius: 16px; }
+  .service-image { min-height: 280px; order: -1; border-radius: 16px; }
+  .service-shot { border-radius: 9px; }
+  .service-shot span { left: 8px; bottom: 8px; padding: 6px 8px; font-size: 7px; }
   .creator-projects { grid-template-columns: 1fr; }
   .creator-thumb { aspect-ratio: 16/10; }
   .short-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 10px; }
@@ -674,6 +682,7 @@ button { font: inherit; }
   .catalog-filter-group > div { width: 100%; flex-wrap: wrap; }
   .catalog-filter-group button { flex: 1 1 auto; }
   .catalog-filter-meta { grid-column: auto; }
+  .catalog-filter-category { grid-column: auto; padding-top: 15px; }
   .catalog-results { padding: 38px 10px 90px; }
   .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 9px; }
   .catalog-thumb { border-radius: 5px; }

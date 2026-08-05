@@ -7,10 +7,12 @@ const workMore = document.querySelector("[data-work-more]");
 const shuffleButton = document.querySelector("[data-shuffle]");
 const formatButtons = [...document.querySelectorAll("[data-format-filter]")];
 const roleButtons = [...document.querySelectorAll("[data-role-filter]")];
+const categoryButtons = [...document.querySelectorAll("[data-category-filter]")];
 
 const state = {
   format: "all",
   role: "all",
+  category: "all",
   visible: 24,
   videos: [...workCatalog],
 };
@@ -36,6 +38,25 @@ const roleLabel = {
   both: "Cadreur & Monteur",
 };
 
+const categoryLabel = {
+  sport: "Sport",
+  lifestyle: "Lifestyle",
+  vlog: "Vlog",
+  divertissement: "Divertissement",
+  corporate: "Corporate",
+  tutoriel: "Tutoriel",
+};
+
+const formatDuration = (duration) => {
+  if (typeof duration === "string") return duration;
+  if (!Number.isFinite(duration)) return "";
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const seconds = duration % 60;
+  const shortTime = `${minutes}:${String(seconds).padStart(2, "0")}`;
+  return hours > 0 ? `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}` : shortTime;
+};
+
 const matchesRole = (video) => {
   if (state.role === "all") return true;
   if (state.role === "both") return video.role === "both";
@@ -44,7 +65,8 @@ const matchesRole = (video) => {
 
 const filteredVideos = () => state.videos.filter((video) => {
   const matchesFormat = state.format === "all" || video.format === state.format;
-  return matchesFormat && matchesRole(video);
+  const matchesCategory = state.category === "all" || video.category === state.category;
+  return matchesFormat && matchesRole(video) && matchesCategory;
 });
 
 const createMeta = (className, text) => {
@@ -72,13 +94,13 @@ const createCard = (video) => {
     image.src = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
   }, { once: true });
   thumb.append(image);
-  thumb.append(createMeta("catalog-duration", video.duration || (video.format === "short" ? "Court" : "Long")));
+  thumb.append(createMeta("catalog-duration", formatDuration(video.duration) || (video.format === "short" ? "Court" : "Long")));
   thumb.append(createMeta("catalog-play", "Voir ↗"));
 
   const body = document.createElement("div");
   body.className = "catalog-body";
   const channel = document.createElement("p");
-  channel.textContent = video.channel;
+  channel.textContent = `${video.channel} · ${categoryLabel[video.category] || "Projet"}`;
   const title = document.createElement("h2");
   title.textContent = video.title;
   const footer = document.createElement("div");
@@ -124,6 +146,15 @@ roleButtons.forEach((button) => {
     state.role = button.dataset.roleFilter;
     state.visible = 24;
     activateFilter(roleButtons, button);
+    render();
+  });
+});
+
+categoryButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.category = button.dataset.categoryFilter;
+    state.visible = 24;
+    activateFilter(categoryButtons, button);
     render();
   });
 });
