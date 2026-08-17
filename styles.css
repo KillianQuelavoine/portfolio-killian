@@ -399,7 +399,6 @@ button { font: inherit; }
 .catalog-body h2 { min-height: 42px; display: -webkit-box; overflow: hidden; margin: 0; font-size: 13px; line-height: 1.55; font-weight: 600; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .catalog-body > div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 7px 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); color: #686868; font: 8px var(--mono); text-transform: uppercase; }
 .catalog-date { color: #888; }
-.catalog-card.catalog-row-break { grid-column-start: 1; }
 .catalog-role { color: #aaa; }
 .catalog-empty { margin: 80px 0; color: #777; text-align: center; }
 .catalog-more { cursor: pointer; display: block; margin: 70px auto 0; padding: 15px 24px; border: 1px solid var(--line); border-radius: 25px; background: #111; color: #ddd; font: 600 11px var(--sans); }
@@ -707,7 +706,6 @@ button { font: inherit; }
   .catalog-category-list button { font-size: 9px; }
   .catalog-results { padding: 38px 10px 90px; }
   .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 34px 9px; }
-  .catalog-card.catalog-row-break { grid-column-start: auto; }
   .catalog-thumb { border-radius: 5px; }
   .catalog-duration { bottom: 7px; left: 7px; padding: 5px 6px; font-size: 7px; }
   .catalog-play { display: none; }

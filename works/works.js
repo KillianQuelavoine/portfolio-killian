@@ -112,6 +112,59 @@ const diversifyCreators = (items) => {
   return result;
 };
 
+const arrangeCreatorsInRows = (items, columnCount) => {
+  if (columnCount <= 2) return [...items];
+
+  const remaining = [...items];
+  const result = [];
+  let previousCreator = "";
+  let runLength = 0;
+
+  while (remaining.length) {
+    const rowCounts = new Map();
+    const rowSize = Math.min(columnCount, remaining.length);
+
+    for (let slot = 0; slot < rowSize; slot += 1) {
+      const creatorAvailability = new Map();
+      remaining.forEach((video) => {
+        const creator = primaryCreator(video);
+        creatorAvailability.set(creator, (creatorAvailability.get(creator) || 0) + 1);
+      });
+
+      const candidates = remaining
+        .map((video, index) => ({
+          video,
+          index,
+          creator: primaryCreator(video),
+          keys: creatorKeys(video),
+        }))
+        .filter(({ creator, keys }) => (
+          (slot === 0 || creator !== previousCreator || runLength < 2)
+          && keys.every((key) => (rowCounts.get(key) || 0) < 2)
+        ))
+        .sort((first, second) => (
+          (creatorAvailability.get(second.creator) || 0) - (creatorAvailability.get(first.creator) || 0)
+          || first.index - second.index
+        ));
+
+      const selected = candidates[0];
+      if (!selected) break;
+
+      const [video] = remaining.splice(selected.index, 1);
+      result.push(video);
+      selected.keys.forEach((key) => rowCounts.set(key, (rowCounts.get(key) || 0) + 1));
+
+      if (selected.creator === previousCreator) runLength += 1;
+      else {
+        previousCreator = selected.creator;
+        runLength = 1;
+      }
+    }
+  }
+
+  return result;
+};
+
 const formatViews = (views) => {
   if (!Number.isFinite(views)) return null;
   if (views >= 1_000_000) return `${(views / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M`;
@@ -161,7 +214,7 @@ const matchesRole = (video) => {
   return video.role === state.role || video.role === "both";
 };
 
-const filteredVideos = () => {
+const filteredVideos = (columnCount = getGridColumnCount()) => {
   const matches = state.videos.filter((video) => {
     const matchesFormat = state.format === "all" || video.format === state.format;
     const matchesCategory = state.category === "all" || video.category === state.category;
@@ -182,7 +235,7 @@ const filteredVideos = () => {
     ordered.sort(byNewest);
     return ordered;
   }
-  return diversifyCreators(ordered);
+  return arrangeCreatorsInRows(diversifyCreators(ordered), columnCount);
 };
 
 const createMeta = (className, text) => {
@@ -192,10 +245,9 @@ const createMeta = (className, text) => {
   return element;
 };
 
-const createCard = (video, startsNewRow = false) => {
+const createCard = (video) => {
   const card = document.createElement("a");
   card.className = "catalog-card";
-  if (startsNewRow) card.classList.add("catalog-row-break");
   card.href = `https://www.youtube.com/watch?v=${video.id}`;
   card.target = "_blank";
   card.rel = "noreferrer";
@@ -240,37 +292,14 @@ const getGridColumnCount = () => {
 };
 
 const prepareGridLayout = (videos) => {
-  const columnCount = getGridColumnCount();
-  let currentColumn = 0;
-  let creatorsInRow = new Map();
-
-  return videos.map((video) => {
-    const keys = creatorKeys(video);
-    const startsNewRow = columnCount > 2
-      && currentColumn > 0
-      && keys.some((creator) => (creatorsInRow.get(creator) || 0) >= 2);
-
-    if (startsNewRow) {
-      currentColumn = 0;
-      creatorsInRow = new Map();
-    }
-
-    keys.forEach((creator) => creatorsInRow.set(creator, (creatorsInRow.get(creator) || 0) + 1));
-    currentColumn += 1;
-    if (currentColumn >= columnCount) {
-      currentColumn = 0;
-      creatorsInRow = new Map();
-    }
-
-    return { video, startsNewRow };
-  });
+  return videos.map((video) => ({ video, startsNewRow: false }));
 };
 
 const render = () => {
   if (!workGrid) return;
   const matches = filteredVideos();
   const visibleVideos = matches.slice(0, state.visible);
-  workGrid.replaceChildren(...prepareGridLayout(visibleVideos).map(({ video, startsNewRow }) => createCard(video, startsNewRow)));
+  workGrid.replaceChildren(...prepareGridLayout(visibleVideos).map(({ video }) => createCard(video)));
   if (workCount) workCount.textContent = `${matches.length} vidéo${matches.length > 1 ? "s" : ""}`;
   if (workEmpty) workEmpty.hidden = matches.length !== 0;
   if (workMore) {
