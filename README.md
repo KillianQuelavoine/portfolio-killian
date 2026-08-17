@@ -7,11 +7,12 @@ Les pictogrammes d’interface utilisent les SVG d’[Iconoir](https://iconoir.c
 ## Pages
 
 - `/` : landing page avec décor de montage animé, showreel, quatre expertises empilées au scroll, six contenus courts sélectionnés, parcours détaillé et contact direct.
-- `/works/` : catalogue de 119 vidéos YouTube — 85 formats longs et 34 formats courts — filtrable par format, rôle et catégorie, avec tri aléatoire, par vues ou par date de sortie.
+- `/works/` : catalogue de 119 vidéos YouTube — 85 formats longs et 34 formats courts — avec quatre menus compacts pour filtrer par format, rôle et catégorie, puis trier aléatoirement, par vues ou par date de sortie.
 - Les dates des formats longs proviennent des métadonnées publiques YouTube. Les formats courts sont replacés dans la chronologie avec une période estimée, selon les expériences Ben Films / Ben Productions (2023–2024), Before Production (2024–2025) et Zack Nani (2025–2026).
-- L’ordre est rééquilibré pour éviter trois cartes du même créateur côte à côte, y compris lorsqu’un filtre concentre fortement les résultats.
+- Le mode aléatoire rééquilibre les créateurs ; les tris par vues et par date restent strictement ordonnés pour préserver l’exactitude des résultats.
 - `/deviens-videaste/` : étude de cas consacrée à la plateforme Deviens Vidéaste.
 - `/mentions-legales/` : informations légales de l’entrepreneur individuel, hébergement et données personnelles.
+- `/assets/cv/CV-Killian-Quelavoine.pdf` : CV éditorial A4 téléchargeable depuis la section À propos.
 
 ## Prévisualisation locale
 

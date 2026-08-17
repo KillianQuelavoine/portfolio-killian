@@ -5,10 +5,10 @@ const workCount = document.querySelector("[data-work-count]");
 const workEmpty = document.querySelector("[data-work-empty]");
 const workMore = document.querySelector("[data-work-more]");
 const shuffleButton = document.querySelector("[data-shuffle]");
-const formatButtons = [...document.querySelectorAll("[data-format-filter]")];
-const roleButtons = [...document.querySelectorAll("[data-role-filter]")];
-const categoryButtons = [...document.querySelectorAll("[data-category-filter]")];
-const sortButtons = [...document.querySelectorAll("[data-sort]")];
+const formatSelect = document.querySelector("[data-format-select]");
+const roleSelect = document.querySelector("[data-role-select]");
+const categorySelect = document.querySelector("[data-category-select]");
+const sortSelect = document.querySelector("[data-sort-select]");
 
 const state = {
   format: "all",
@@ -175,14 +175,12 @@ const filteredVideos = () => {
       const secondViews = Number.isFinite(second.views) ? second.views : -1;
       return secondViews - firstViews || second.publishedAt.localeCompare(first.publishedAt);
     });
-    const measured = ordered.filter((video) => Number.isFinite(video.views));
-    const unmeasured = ordered.filter((video) => !Number.isFinite(video.views));
-    return [...diversifyCreators(measured), ...diversifyCreators(unmeasured)];
+    return ordered;
   }
   if (state.sort === "date") {
     const byNewest = (first, second) => second.publishedAt.localeCompare(first.publishedAt);
     ordered.sort(byNewest);
-    return diversifyCreators(ordered);
+    return ordered;
   }
   return diversifyCreators(ordered);
 };
@@ -248,7 +246,8 @@ const prepareGridLayout = (videos) => {
 
   return videos.map((video) => {
     const keys = creatorKeys(video);
-    const startsNewRow = columnCount > 2
+    const startsNewRow = state.sort === "random"
+      && columnCount > 2
       && currentColumn > 0
       && keys.some((creator) => (creatorsInRow.get(creator) || 0) >= 2);
 
@@ -281,49 +280,29 @@ const render = () => {
   }
 };
 
-const activateFilter = (buttons, activeButton) => {
-  buttons.forEach((button) => {
-    const active = button === activeButton;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
-};
-
-formatButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    state.format = button.dataset.formatFilter;
+formatSelect?.addEventListener("change", () => {
+    state.format = formatSelect.value;
     state.visible = 24;
-    activateFilter(formatButtons, button);
     render();
-  });
 });
 
-roleButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    state.role = button.dataset.roleFilter;
+roleSelect?.addEventListener("change", () => {
+    state.role = roleSelect.value;
     state.visible = 24;
-    activateFilter(roleButtons, button);
     render();
-  });
 });
 
-categoryButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    state.category = button.dataset.categoryFilter;
+categorySelect?.addEventListener("change", () => {
+    state.category = categorySelect.value;
     state.visible = 24;
-    activateFilter(categoryButtons, button);
     render();
-  });
 });
 
-sortButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    state.sort = button.dataset.sort;
+sortSelect?.addEventListener("change", () => {
+    state.sort = sortSelect.value;
     if (state.sort === "random") state.videos = shuffle(workCatalog);
     state.visible = 24;
-    activateFilter(sortButtons, button);
     render();
-  });
 });
 
 workMore?.addEventListener("click", () => {
@@ -335,8 +314,7 @@ shuffleButton?.addEventListener("click", () => {
   state.sort = "random";
   state.videos = shuffle(workCatalog);
   state.visible = 24;
-  const randomButton = sortButtons.find((button) => button.dataset.sort === "random");
-  if (randomButton) activateFilter(sortButtons, randomButton);
+  if (sortSelect) sortSelect.value = "random";
   render();
 });
 
