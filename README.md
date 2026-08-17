@@ -12,7 +12,7 @@ Les pictogrammes d’interface utilisent les SVG d’[Iconoir](https://iconoir.c
 - Le mode aléatoire rééquilibre les créateurs ; les tris par vues et par date restent strictement ordonnés pour préserver l’exactitude des résultats.
 - `/deviens-videaste/` : étude de cas consacrée à la plateforme Deviens Vidéaste.
 - `/mentions-legales/` : informations légales de l’entrepreneur individuel, hébergement et données personnelles.
-- `/assets/cv/CV-Killian-Quelavoine.pdf` : CV éditorial A4 téléchargeable depuis la section À propos.
+- Le bouton CV de la section À propos ouvre la version Google Drive dans un nouvel onglet.
 
 ## Prévisualisation locale
 
