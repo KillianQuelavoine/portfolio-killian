@@ -39,7 +39,7 @@ const creatorKeys = (video) => {
     ["jacksons", "les-jacksons"],
     ["darko", "darko"],
     ["benjamin mollier", "benjamin-mollier"],
-    ["ben films", "ben-films"],
+    ["ben films", "benjamin-mollier"],
     ["before production", "before-production"],
     ["final cut school", "final-cut-school"],
     ["cogiteur", "cogiteur"],
@@ -246,8 +246,7 @@ const prepareGridLayout = (videos) => {
 
   return videos.map((video) => {
     const keys = creatorKeys(video);
-    const startsNewRow = state.sort === "random"
-      && columnCount > 2
+    const startsNewRow = columnCount > 2
       && currentColumn > 0
       && keys.some((creator) => (creatorsInRow.get(creator) || 0) >= 2);
 
