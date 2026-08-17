@@ -8,11 +8,13 @@ const shuffleButton = document.querySelector("[data-shuffle]");
 const formatButtons = [...document.querySelectorAll("[data-format-filter]")];
 const roleButtons = [...document.querySelectorAll("[data-role-filter]")];
 const categoryButtons = [...document.querySelectorAll("[data-category-filter]")];
+const sortButtons = [...document.querySelectorAll("[data-sort]")];
 
 const state = {
   format: "all",
   role: "all",
   category: "all",
+  sort: "random",
   visible: 24,
   videos: [...workCatalog],
 };
@@ -26,11 +28,105 @@ const shuffle = (items) => {
   return result;
 };
 
+const creatorKeys = (video) => {
+  const channel = video.channel
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  const aliases = [
+    ["zack", "zack"],
+    ["kaatsup", "kaatsup"],
+    ["jacksons", "les-jacksons"],
+    ["darko", "darko"],
+    ["benjamin mollier", "benjamin-mollier"],
+    ["ben films", "ben-films"],
+    ["before production", "before-production"],
+    ["final cut school", "final-cut-school"],
+    ["cogiteur", "cogiteur"],
+    ["natoo", "natoo"],
+    ["henry tran", "henry-tran"],
+    ["candice", "candice"],
+    ["anaonair", "anaonair"],
+    ["killian", "killian"],
+  ];
+  const matches = aliases.filter(([needle]) => channel.includes(needle)).map(([, key]) => key);
+  return matches.length ? matches : [channel.replace(/[^a-z0-9]+/g, "-")];
+};
+
+const primaryCreator = (video) => creatorKeys(video)[0];
+
+const minimumRunLimit = (groups, preferredLimit = 2) => {
+  const total = [...groups.values()].reduce((sum, group) => sum + group.queue.length, 0);
+  const largestGroup = Math.max(0, ...[...groups.values()].map((group) => group.queue.length));
+  return Math.max(preferredLimit, Math.ceil(largestGroup / Math.max(1, total - largestGroup + 1)));
+};
+
+const canFinishWithoutLongerRun = (groups, lastCreator, runLength, runLimit) => {
+  const total = [...groups.values()].reduce((sum, group) => sum + group.queue.length, 0);
+  return [...groups.entries()].every(([creator, group]) => {
+    const count = group.queue.length;
+    const otherCreators = total - count;
+    const firstBlock = creator === lastCreator ? Math.max(0, runLimit - runLength) : runLimit;
+    return count <= firstBlock + (runLimit * otherCreators);
+  });
+};
+
+const diversifyCreators = (items) => {
+  const groups = new Map();
+  items.forEach((video, originalIndex) => {
+    const creator = primaryCreator(video);
+    if (!groups.has(creator)) groups.set(creator, { queue: [] });
+    groups.get(creator).queue.push({ video, originalIndex });
+  });
+
+  const runLimit = minimumRunLimit(groups);
+  const result = [];
+  let lastCreator = "";
+  let runLength = 0;
+
+  while (result.length < items.length) {
+    const candidates = [...groups.entries()]
+      .filter(([, group]) => group.queue.length)
+      .filter(([creator]) => creator !== lastCreator || runLength < runLimit)
+      .sort((first, second) => first[1].queue[0].originalIndex - second[1].queue[0].originalIndex);
+
+    const selected = candidates.find(([creator, group]) => {
+      const item = group.queue.shift();
+      const nextRunLength = creator === lastCreator ? runLength + 1 : 1;
+      const feasible = canFinishWithoutLongerRun(groups, creator, nextRunLength, runLimit);
+      group.queue.unshift(item);
+      return feasible;
+    }) || candidates[0];
+
+    if (!selected) break;
+    const [creator, group] = selected;
+    const { video } = group.queue.shift();
+    result.push(video);
+    if (creator === lastCreator) runLength += 1;
+    else {
+      lastCreator = creator;
+      runLength = 1;
+    }
+  }
+
+  return result;
+};
+
 const formatViews = (views) => {
   if (!Number.isFinite(views)) return null;
   if (views >= 1_000_000) return `${(views / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M`;
   if (views >= 1_000) return `${Math.round(views / 1_000).toLocaleString("fr-FR")} k`;
   return views.toLocaleString("fr-FR");
+};
+
+const formatPublishedDate = (publishedAt) => {
+  if (!publishedAt) return "Date non précisée";
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${publishedAt}T12:00:00Z`));
 };
 
 const roleLabel = {
@@ -64,11 +160,32 @@ const matchesRole = (video) => {
   return video.role === state.role || video.role === "both";
 };
 
-const filteredVideos = () => state.videos.filter((video) => {
-  const matchesFormat = state.format === "all" || video.format === state.format;
-  const matchesCategory = state.category === "all" || video.category === state.category;
-  return matchesFormat && matchesRole(video) && matchesCategory;
-});
+const filteredVideos = () => {
+  const matches = state.videos.filter((video) => {
+    const matchesFormat = state.format === "all" || video.format === state.format;
+    const matchesCategory = state.category === "all" || video.category === state.category;
+    return matchesFormat && matchesRole(video) && matchesCategory;
+  });
+
+  let ordered = [...matches];
+  if (state.sort === "views") {
+    ordered.sort((first, second) => {
+      const firstViews = Number.isFinite(first.views) ? first.views : -1;
+      const secondViews = Number.isFinite(second.views) ? second.views : -1;
+      return secondViews - firstViews || second.publishedAt.localeCompare(first.publishedAt);
+    });
+    const measured = ordered.filter((video) => Number.isFinite(video.views));
+    const unmeasured = ordered.filter((video) => !Number.isFinite(video.views));
+    return [...diversifyCreators(measured), ...diversifyCreators(unmeasured)];
+  }
+  if (state.sort === "date") {
+    const byNewest = (first, second) => second.publishedAt.localeCompare(first.publishedAt);
+    const longVideos = ordered.filter((video) => video.format === "long").sort(byNewest);
+    const shortVideos = ordered.filter((video) => video.format === "short").sort(byNewest);
+    return [...diversifyCreators(longVideos), ...diversifyCreators(shortVideos)];
+  }
+  return diversifyCreators(ordered);
+};
 
 const createMeta = (className, text) => {
   const element = document.createElement("span");
@@ -77,9 +194,10 @@ const createMeta = (className, text) => {
   return element;
 };
 
-const createCard = (video) => {
+const createCard = (video, startsNewRow = false) => {
   const card = document.createElement("a");
   card.className = "catalog-card";
+  if (startsNewRow) card.classList.add("catalog-row-break");
   card.href = `https://www.youtube.com/watch?v=${video.id}`;
   card.target = "_blank";
   card.rel = "noreferrer";
@@ -109,17 +227,52 @@ const createCard = (video) => {
   const footer = document.createElement("div");
   const views = formatViews(video.views);
   footer.append(createMeta("catalog-role", roleLabel[video.role]));
+  footer.append(createMeta("catalog-date", formatPublishedDate(video.publishedAt)));
   footer.append(createMeta("catalog-views", views ? `${views} vues` : "Vues non précisées"));
   body.append(channel, title, footer);
   card.append(thumb, body);
   return card;
 };
 
+const getGridColumnCount = () => {
+  if (!workGrid || typeof window.getComputedStyle !== "function") return 4;
+  const template = window.getComputedStyle(workGrid).gridTemplateColumns;
+  if (!template || template === "none") return 4;
+  return template.trim().split(/\s+/).length;
+};
+
+const prepareGridLayout = (videos) => {
+  const columnCount = getGridColumnCount();
+  let currentColumn = 0;
+  let creatorsInRow = new Map();
+
+  return videos.map((video) => {
+    const keys = creatorKeys(video);
+    const startsNewRow = columnCount > 2
+      && currentColumn > 0
+      && keys.some((creator) => (creatorsInRow.get(creator) || 0) >= 2);
+
+    if (startsNewRow) {
+      currentColumn = 0;
+      creatorsInRow = new Map();
+    }
+
+    keys.forEach((creator) => creatorsInRow.set(creator, (creatorsInRow.get(creator) || 0) + 1));
+    currentColumn += 1;
+    if (currentColumn >= columnCount) {
+      currentColumn = 0;
+      creatorsInRow = new Map();
+    }
+
+    return { video, startsNewRow };
+  });
+};
+
 const render = () => {
   if (!workGrid) return;
   const matches = filteredVideos();
   const visibleVideos = matches.slice(0, state.visible);
-  workGrid.replaceChildren(...visibleVideos.map(createCard));
+  workGrid.replaceChildren(...prepareGridLayout(visibleVideos).map(({ video, startsNewRow }) => createCard(video, startsNewRow)));
   if (workCount) workCount.textContent = `${matches.length} vidéo${matches.length > 1 ? "s" : ""}`;
   if (workEmpty) workEmpty.hidden = matches.length !== 0;
   if (workMore) {
@@ -163,16 +316,35 @@ categoryButtons.forEach((button) => {
   });
 });
 
+sortButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.sort = button.dataset.sort;
+    if (state.sort === "random") state.videos = shuffle(workCatalog);
+    state.visible = 24;
+    activateFilter(sortButtons, button);
+    render();
+  });
+});
+
 workMore?.addEventListener("click", () => {
   state.visible += 24;
   render();
 });
 
 shuffleButton?.addEventListener("click", () => {
-  state.videos = shuffle(state.videos);
+  state.sort = "random";
+  state.videos = shuffle(workCatalog);
   state.visible = 24;
+  const randomButton = sortButtons.find((button) => button.dataset.sort === "random");
+  if (randomButton) activateFilter(sortButtons, randomButton);
   render();
 });
 
 state.videos = shuffle(state.videos);
 render();
+
+let resizeTimer;
+window.addEventListener("resize", () => {
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(render, 120);
+});
