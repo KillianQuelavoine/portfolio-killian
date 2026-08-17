@@ -4,8 +4,8 @@ Portfolio statique, responsive et prêt à être déployé gratuitement sur Verc
 
 ## Pages
 
-- `/` : landing page avec décor de montage animé, showreel, quatre expertises empilées au scroll, six emplacements réservés aux futurs contenus courts, parcours détaillé et contact direct.
-- `/works/` : catalogue aléatoire de 104 vidéos YouTube au format long, filtrable par format, rôle et catégorie. Le filtre « Courts » est prêt à recevoir une future sélection.
+- `/` : landing page avec décor de montage animé, showreel, quatre expertises empilées au scroll, six contenus courts sélectionnés, parcours détaillé et contact direct.
+- `/works/` : catalogue aléatoire de 138 vidéos YouTube — 104 formats longs et 34 formats courts — filtrable par format, rôle et catégorie.
 - `/deviens-videaste/` : étude de cas consacrée à la plateforme Deviens Vidéaste.
 - `/mentions-legales/` : informations légales de l’entrepreneur individuel, hébergement et données personnelles.
 

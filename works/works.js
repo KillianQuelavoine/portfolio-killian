@@ -27,6 +27,7 @@ const shuffle = (items) => {
 };
 
 const formatViews = (views) => {
+  if (!Number.isFinite(views)) return null;
   if (views >= 1_000_000) return `${(views / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M`;
   if (views >= 1_000) return `${Math.round(views / 1_000).toLocaleString("fr-FR")} k`;
   return views.toLocaleString("fr-FR");
@@ -104,8 +105,9 @@ const createCard = (video) => {
   const title = document.createElement("h2");
   title.textContent = video.title;
   const footer = document.createElement("div");
+  const views = formatViews(video.views);
   footer.append(createMeta("catalog-role", roleLabel[video.role]));
-  footer.append(createMeta("catalog-views", `${formatViews(video.views)} vues`));
+  footer.append(createMeta("catalog-views", views ? `${views} vues` : "Vues non précisées"));
   body.append(channel, title, footer);
   card.append(thumb, body);
   return card;
