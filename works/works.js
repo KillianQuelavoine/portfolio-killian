@@ -5,10 +5,10 @@ const workCount = document.querySelector("[data-work-count]");
 const workEmpty = document.querySelector("[data-work-empty]");
 const workMore = document.querySelector("[data-work-more]");
 const shuffleButton = document.querySelector("[data-shuffle]");
-const formatSelect = document.querySelector("[data-format-select]");
-const roleSelect = document.querySelector("[data-role-select]");
-const categorySelect = document.querySelector("[data-category-select]");
-const sortSelect = document.querySelector("[data-sort-select]");
+const formatButtons = [...document.querySelectorAll("[data-format-filter]")];
+const roleButtons = [...document.querySelectorAll("[data-role-filter]")];
+const categoryButtons = [...document.querySelectorAll("[data-category-filter]")];
+const sortButtons = [...document.querySelectorAll("[data-sort]")];
 
 const state = {
   format: "all",
@@ -280,29 +280,49 @@ const render = () => {
   }
 };
 
-formatSelect?.addEventListener("change", () => {
-    state.format = formatSelect.value;
+const activateFilter = (buttons, activeButton) => {
+  buttons.forEach((button) => {
+    const active = button === activeButton;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+};
+
+formatButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.format = button.dataset.formatFilter;
     state.visible = 24;
+    activateFilter(formatButtons, button);
     render();
+  });
 });
 
-roleSelect?.addEventListener("change", () => {
-    state.role = roleSelect.value;
+roleButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.role = button.dataset.roleFilter;
     state.visible = 24;
+    activateFilter(roleButtons, button);
     render();
+  });
 });
 
-categorySelect?.addEventListener("change", () => {
-    state.category = categorySelect.value;
+categoryButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.category = button.dataset.categoryFilter;
     state.visible = 24;
+    activateFilter(categoryButtons, button);
     render();
+  });
 });
 
-sortSelect?.addEventListener("change", () => {
-    state.sort = sortSelect.value;
+sortButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.sort = button.dataset.sort;
     if (state.sort === "random") state.videos = shuffle(workCatalog);
     state.visible = 24;
+    activateFilter(sortButtons, button);
     render();
+  });
 });
 
 workMore?.addEventListener("click", () => {
@@ -314,7 +334,8 @@ shuffleButton?.addEventListener("click", () => {
   state.sort = "random";
   state.videos = shuffle(workCatalog);
   state.visible = 24;
-  if (sortSelect) sortSelect.value = "random";
+  const randomButton = sortButtons.find((button) => button.dataset.sort === "random");
+  if (randomButton) activateFilter(sortButtons, randomButton);
   render();
 });
 
