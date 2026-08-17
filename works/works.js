@@ -119,14 +119,15 @@ const formatViews = (views) => {
   return views.toLocaleString("fr-FR");
 };
 
-const formatPublishedDate = (publishedAt) => {
-  if (!publishedAt) return "Date non précisée";
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
+const formatPublishedDate = (video) => {
+  if (!video.publishedAt) return "Date non précisée";
+  const formatted = new Intl.DateTimeFormat("fr-FR", {
+    day: video.dateApproximate ? undefined : "numeric",
     month: "short",
     year: "numeric",
     timeZone: "UTC",
-  }).format(new Date(`${publishedAt}T12:00:00Z`));
+  }).format(new Date(`${video.publishedAt}T12:00:00Z`));
+  return video.dateApproximate ? `Période estimée · ${formatted}` : formatted;
 };
 
 const roleLabel = {
@@ -180,9 +181,8 @@ const filteredVideos = () => {
   }
   if (state.sort === "date") {
     const byNewest = (first, second) => second.publishedAt.localeCompare(first.publishedAt);
-    const longVideos = ordered.filter((video) => video.format === "long").sort(byNewest);
-    const shortVideos = ordered.filter((video) => video.format === "short").sort(byNewest);
-    return [...diversifyCreators(longVideos), ...diversifyCreators(shortVideos)];
+    ordered.sort(byNewest);
+    return diversifyCreators(ordered);
   }
   return diversifyCreators(ordered);
 };
@@ -227,7 +227,7 @@ const createCard = (video, startsNewRow = false) => {
   const footer = document.createElement("div");
   const views = formatViews(video.views);
   footer.append(createMeta("catalog-role", roleLabel[video.role]));
-  footer.append(createMeta("catalog-date", formatPublishedDate(video.publishedAt)));
+  footer.append(createMeta("catalog-date", formatPublishedDate(video)));
   footer.append(createMeta("catalog-views", views ? `${views} vues` : "Vues non précisées"));
   body.append(channel, title, footer);
   card.append(thumb, body);
