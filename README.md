@@ -2,6 +2,8 @@
 
 Portfolio statique, responsive et prêt à être déployé gratuitement sur Vercel.
 
+Les pictogrammes d’interface utilisent les SVG d’[Iconoir](https://iconoir.com/), distribués sous licence MIT et intégrés localement dans `assets/iconoir.svg`.
+
 ## Pages
 
 - `/` : landing page avec décor de montage animé, showreel, quatre expertises empilées au scroll, six contenus courts sélectionnés, parcours détaillé et contact direct.

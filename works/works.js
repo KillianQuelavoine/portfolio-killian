@@ -96,7 +96,9 @@ const createCard = (video) => {
   }, { once: true });
   thumb.append(image);
   thumb.append(createMeta("catalog-duration", formatDuration(video.duration) || (video.format === "short" ? "Court" : "Long")));
-  thumb.append(createMeta("catalog-play", "Voir ↗"));
+  const play = createMeta("catalog-play", "Voir");
+  play.insertAdjacentHTML("beforeend", '<svg class="icon" aria-hidden="true"><use href="../assets/iconoir.svg#arrow-up-right"></use></svg>');
+  thumb.append(play);
 
   const body = document.createElement("div");
   body.className = "catalog-body";
