@@ -55,7 +55,9 @@ const creatorKeys = (video) => {
 
 const primaryCreator = (video) => creatorKeys(video)[0];
 const RANDOM_LEAD_EXCLUDED_CREATOR = "benjamin-mollier";
-const RANDOM_LEAD_SIZE = 8;
+const RANDOM_LEAD_SIZE = 4;
+const RANDOM_TOP_WINDOW_SIZE = 8;
+const RANDOM_TOP_WINDOW_MAX = 1;
 
 const minimumRunLimit = (groups, preferredLimit = 2) => {
   const total = [...groups.values()].reduce((sum, group) => sum + group.queue.length, 0);
@@ -119,6 +121,8 @@ const arrangeCreatorsInRows = (
   columnCount,
   leadExcludedCreator = "",
   protectedLeadSize = 0,
+  limitedWindowSize = 0,
+  limitedWindowMax = Number.POSITIVE_INFINITY,
 ) => {
   const remaining = [...items];
   const result = [];
@@ -152,7 +156,13 @@ const arrangeCreatorsInRows = (
           || first.index - second.index
         ));
 
-      const leadCandidates = result.length < protectedLeadSize
+      const creatorCountInLimitedWindow = result
+        .slice(0, limitedWindowSize)
+        .filter((video) => primaryCreator(video) === leadExcludedCreator)
+        .length;
+      const mustExcludeFromCurrentSlot = result.length < protectedLeadSize
+        || (result.length < limitedWindowSize && creatorCountInLimitedWindow >= limitedWindowMax);
+      const leadCandidates = mustExcludeFromCurrentSlot
         ? candidates.filter(({ creator }) => creator !== leadExcludedCreator)
         : candidates;
       const selected = leadCandidates[0] || candidates[0];
@@ -248,6 +258,8 @@ const filteredVideos = (columnCount = getGridColumnCount()) => {
     columnCount,
     RANDOM_LEAD_EXCLUDED_CREATOR,
     RANDOM_LEAD_SIZE,
+    RANDOM_TOP_WINDOW_SIZE,
+    RANDOM_TOP_WINDOW_MAX,
   );
 };
 
