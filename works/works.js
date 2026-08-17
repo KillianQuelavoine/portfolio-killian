@@ -54,6 +54,8 @@ const creatorKeys = (video) => {
 };
 
 const primaryCreator = (video) => creatorKeys(video)[0];
+const RANDOM_LEAD_EXCLUDED_CREATOR = "benjamin-mollier";
+const RANDOM_LEAD_SIZE = 8;
 
 const minimumRunLimit = (groups, preferredLimit = 2) => {
   const total = [...groups.values()].reduce((sum, group) => sum + group.queue.length, 0);
@@ -112,9 +114,12 @@ const diversifyCreators = (items) => {
   return result;
 };
 
-const arrangeCreatorsInRows = (items, columnCount) => {
-  if (columnCount <= 2) return [...items];
-
+const arrangeCreatorsInRows = (
+  items,
+  columnCount,
+  leadExcludedCreator = "",
+  protectedLeadSize = 0,
+) => {
   const remaining = [...items];
   const result = [];
   let previousCreator = "";
@@ -147,7 +152,10 @@ const arrangeCreatorsInRows = (items, columnCount) => {
           || first.index - second.index
         ));
 
-      const selected = candidates[0];
+      const leadCandidates = result.length < protectedLeadSize
+        ? candidates.filter(({ creator }) => creator !== leadExcludedCreator)
+        : candidates;
+      const selected = leadCandidates[0] || candidates[0];
       if (!selected) break;
 
       const [video] = remaining.splice(selected.index, 1);
@@ -235,7 +243,12 @@ const filteredVideos = (columnCount = getGridColumnCount()) => {
     ordered.sort(byNewest);
     return ordered;
   }
-  return arrangeCreatorsInRows(diversifyCreators(ordered), columnCount);
+  return arrangeCreatorsInRows(
+    diversifyCreators(ordered),
+    columnCount,
+    RANDOM_LEAD_EXCLUDED_CREATOR,
+    RANDOM_LEAD_SIZE,
+  );
 };
 
 const createMeta = (className, text) => {
