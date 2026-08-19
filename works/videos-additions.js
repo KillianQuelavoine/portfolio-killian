@@ -4,7 +4,7 @@ window.WORK_VIDEOS.push({
   channel: "ZACK",
   views: 1_500_000,
   role: "both",
-  format: "long",
+  format: "short",
   category: "sport",
   duration: null,
   publishedAt: "2025-11-20",
