@@ -303,7 +303,7 @@ const createCard = (video) => {
   const views = formatViews(video.views);
   footer.append(createMeta("catalog-role", roleLabel[video.role]));
   footer.append(createMeta("catalog-date", formatPublishedDate(video)));
-  footer.append(createMeta("catalog-views", views ? `${views} vues` : "Vues non précisées"));
+  footer.append(createMeta("catalog-views", views ? `${video.viewsApproximate ? "≈ " : ""}${views} vues` : "Vues non précisées"));
   body.append(channel, title, footer);
   card.append(thumb, body);
   return card;
